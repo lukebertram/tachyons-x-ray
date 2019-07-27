@@ -2,11 +2,11 @@ const state = {
   xRayOn: false
 };
 
-chrome.browserAction.onClicked.addListener(tab => {
+browser.browserAction.onClicked.addListener(tab => {
   state.xRayOn = !state.xRayOn
   toggleIcon(state.xRayOn)
 
-  chrome.tabs.executeScript({
+  browser.tabs.executeScript({
     code: `
       (function() {
         const prevStyle = document.getElementById('tachyons-x-ray')
@@ -48,14 +48,14 @@ chrome.browserAction.onClicked.addListener(tab => {
 
           // Create options list and styles for it
           const optionsList = document.createElement('ul')
-          optionsList.style = 'background-color: #fff !important; outline: none !important; margin: 0; list-style-type: none; padding: 0; border-radius: 3px; border: 1px solid #444; font-family: monospace; font-size: 12px; position: fixed; top: 48px; right: 48px; overflow: hidden;'
+          optionsList.style = 'background-color: #fff !important; outline: none !important; margin: 0; list-style-type: none; padding: 0; border-radius: 3px; border: 1px solid #444; font-family: monospace; font-size: 12px; position: fixed; top: 48px; right: 48px; overflow: hidden; z-index: 1;'
 
           const options = ['alpha 8', 'solid 8', 'alpha 16', 'solid 16']
           options.forEach((opt, idx) => {
             const option = document.createElement('li')
             option.appendChild(document.createTextNode(opt))
             option.style = 'background-color: #fff !important; outline: none !important; padding: 4px 8px; cursor: pointer; line-height: 1; border-bottom: 1px solid #444'
-            option.onclick = selectGrid(opt.replace(/ /g, ''))
+            option.addEventListener('click', (event) => selectGrid(event.target.textContent.replace(/ /g, '')))
             optionsList.appendChild(option)
           })
 
@@ -195,13 +195,11 @@ chrome.browserAction.onClicked.addListener(tab => {
           const grids = ${ JSON.stringify(grids) }
 
           function selectGrid(type) {
-            return () => {
-              const background = (
-                'url("' + grids[type] + '") left top repeat transparent'
-              )
-              style.sheet.rules[0].style.background = background
-              toggleOptionsList()
-            }
+            const background = (
+              'url("' + grids[type] + '") left top repeat transparent'
+            )
+            style.sheet.cssRules[0].style.background = background
+            toggleOptionsList()
           }
         }
       })()
@@ -212,7 +210,7 @@ chrome.browserAction.onClicked.addListener(tab => {
 function toggleIcon(isOn) {
   const icon = isOn ? 'icon-on' : 'icon'
 
-  chrome.browserAction.setIcon({
+  browser.browserAction.setIcon({
     path : {
       '19': `icons/${ icon }19x.png`,
       '38': `icons/${ icon }38x.png`
